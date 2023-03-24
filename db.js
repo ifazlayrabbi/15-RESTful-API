@@ -8,10 +8,25 @@ const articleSchema = mongoose.Schema({
     type: String,
     required: [true, 'Title is missing!']
   },
-  content: String
+  content: String,
+  body: [{
+    title1: String,
+    content1: String
+  }]
 })
 const Article = mongoose.model('Article', articleSchema)
 exports.Article = Article
+
+
+
+
+
+// Article.deleteOne({title: 'title2'})
+// .then(() => console.log('Deleted'))
+// .catch(err => console.log(err.message))
+
+
+
 
 
 const article1 = new Article({
