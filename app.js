@@ -12,11 +12,12 @@ require('dotenv').config()
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 app.use(express.json())
+const _ = require('lodash')
 const {Article} = require('./db')
 
 
-
-app.get('/articles', (req, res) => {
+app.route('/articles')
+.get((req, res) => {
   Article.find()
   .then(articleData => {
     console.log('Displaying all the articles.')
@@ -25,11 +26,11 @@ app.get('/articles', (req, res) => {
   .catch(err => res.send(err.message))
 })
 
-app.post('/articles', (req, res) => {
+.post((req, res) => {
   const {title, content} = req.body
 
   const article = new Article({
-    title: title,
+    title: _.kebabCase(title),
     content: content
   })
   article.save()
@@ -41,8 +42,8 @@ app.post('/articles', (req, res) => {
 
 })
 
-app.delete('/articles', (req, res) => {
-  Article.deleteMany({title: {$in: "title2"}})
+.delete((req, res) => {
+  Article.deleteMany({title: {$in: "REST"}})
   .then(() => {
     console.log('Deleted the item.')
     res.redirect('/articles')
@@ -50,7 +51,7 @@ app.delete('/articles', (req, res) => {
   .catch(err => console.log(err.message))
 })
 
-app.patch('/articles', (req, res) => {
+.patch((req, res) => {
   // Article.updateOne(
   //   {title: 'title2'},
   //   {$set: {body: {title1: 'title2 bb', content1: 'content2 bb'}}}
@@ -70,6 +71,17 @@ app.patch('/articles', (req, res) => {
   .catch(err => console.log(err.message))
 })
 
+
+
+
+
+
+
+app.route('/articles/:articleTitle')
+.get((req, res) => {
+  Article.find({title: _.kebabCase(req.params.articleTitle)})
+  .then(resp => res.send(resp))
+})
 
 
 
