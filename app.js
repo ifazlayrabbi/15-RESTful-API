@@ -16,16 +16,28 @@ const _ = require('lodash')
 const {Article} = require('./db')
 
 
+
+
+
+// RESTful API creation       (REpresentational State Transfer)
+// 1. HTTP request verbs      (get, post, put, patch, delete)
+// 2. specific pattern for route/endpoint url   (  app.route('/articles')  )
+
+
+
 app.route('/articles')
+
+// find all articles
 .get((req, res) => {
   Article.find()
   .then(articleData => {
-    console.log('Displaying all the articles.')
+    console.log('Found all the articles.')
     res.send(articleData)
   })
   .catch(err => res.send(err.message))
 })
 
+// create one article
 .post((req, res) => {
   const {title, content} = req.body
 
@@ -35,22 +47,58 @@ app.route('/articles')
   })
   article.save()
   .then(() => {
-    console.log('New Article saved.')
+    console.log('New Article created.')
     res.redirect('/articles')
   })
   .catch(err => console.log(err.message))
 
 })
 
+// delete all articles
 .delete((req, res) => {
-  Article.deleteMany({title: {$in: "REST"}})
+  // Article.deleteMany()
+  // Article.deleteMany({_id: {$in: ["641d56abad3733301b2edb12", "641d57a0667ec8c74fb125a2", "641d580fd1e6612aacc87aad"]}})
+  Article.deleteMany({title: {$in: [_.kebabCase("title1"), _.kebabCase("title2")]}})
   .then(() => {
-    console.log('Deleted the item.')
+    console.log('Deleted many articles.')
     res.redirect('/articles')
   })
   .catch(err => console.log(err.message))
 })
 
+
+
+
+
+
+app.route('/articles/:articleTitle')
+
+// find one article
+.get((req, res) => {
+  Article.find({title: _.kebabCase(req.params.articleTitle)})
+  .then(resp => {
+    console.log('Article found.')
+    res.send(resp)
+  })
+  .catch(err => res.send(err.message))
+})
+
+// update one article
+.put((req, res) => {
+  const {title, content} = req.body
+
+  Article.updateOne(
+    {title: _.kebabCase(req.params.articleTitle)},
+    {$set: {title: _.kebabCase(title), content: content}},
+  )
+  .then(() => {
+    console.log('Article is updated.')
+    res.redirect('/articles')
+  })
+  .catch(err => console.log(err.message))
+})
+
+// update one article
 .patch((req, res) => {
   // Article.updateOne(
   //   {title: 'title2'},
@@ -60,9 +108,17 @@ app.route('/articles')
   //   {title: 'title2'},
   //   {$push: {body: {title1: 'title4 dd', content1: 'content4 dd'}}}
   // )
+  // Article.updateOne(
+  //   {title: 'title2'},
+  //   {$pull: {body: {title1: 'title4 dd'}}}
+  // )
+
+
+  const {title, content} = req.body
+
   Article.updateOne(
-    {title: 'title2'},
-    {$pull: {body: {title1: 'title4 dd'}}}
+    {title: _.kebabCase(req.params.articleTitle)},
+    {$set: {title: _.kebabCase(title), content: content}},
   )
   .then(() => {
     console.log('Updated the document.')
@@ -71,17 +127,17 @@ app.route('/articles')
   .catch(err => console.log(err.message))
 })
 
-
-
-
-
-
-
-app.route('/articles/:articleTitle')
-.get((req, res) => {
-  Article.find({title: _.kebabCase(req.params.articleTitle)})
-  .then(resp => res.send(resp))
+// delete one article
+.delete((req, res) => {
+  Article.deleteOne({title: _.kebabCase(req.params.articleTitle)})
+  .then(() => {
+    console.log('Deleted the article.')
+    res.redirect('/articles')
+  })
+  .catch(err => console.log(err.message))
 })
+
+
 
 
 
